@@ -1,13 +1,30 @@
 import { useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import {
+	Button,
+	FlatList,
+	Pressable,
+	StatusBar,
+	StyleSheet,
+	View,
+} from 'react-native';
 import GoalItem from './components/GoalItem';
 import GoalInput from './components/GoalInput';
 
 const App = () => {
 	const [Goals, setGoals] = useState([]);
 	const [goalText, setGoalText] = useState('');
+	const [modalIsVisible, setModalIsVisible] = useState(false);
 
 	const handleInputChange = (text) => setGoalText(text);
+
+	const startAddGoalhandler = () => {
+		setModalIsVisible(true);
+	};
+
+	const endAddGoalhandler = () => {
+		setGoalText('');
+		setModalIsVisible(false);
+	};
 
 	const addGoal = () => {
 		if (!goalText.trim()) return;
@@ -16,23 +33,44 @@ const App = () => {
 			{ text: goalText, id: Math.random().toString() },
 		]);
 		setGoalText('');
+		setModalIsVisible(false);
+	};
+
+	const deleteGoal = (id) => {
+		setGoals((prevGoals) => prevGoals.filter((goals) => goals.id !== id));
 	};
 
 	return (
-		<View style={styles.appContainer}>
-			<GoalInput
-				onPress={addGoal}
-				onChangeText={handleInputChange}
-				value={goalText}
-			/>
-			<View style={styles.goalsContainer}>
-				<FlatList
-					data={Goals}
-					renderItem={(itemData) => <GoalItem text={itemData.item.text} />}
-					keyExtractor={(itemdId) => itemdId.id}
+		<>
+			<StatusBar style="auto" />
+			<View style={styles.appContainer}>
+				<Button
+					title="Add New Goal"
+					color="#b180f0"
+					onPress={startAddGoalhandler}
 				/>
+				<GoalInput
+					visible={modalIsVisible}
+					onPress={addGoal}
+					cancleModal={endAddGoalhandler}
+					onChangeText={handleInputChange}
+					value={goalText}
+				/>
+
+				<View style={styles.goalsContainer}>
+					<FlatList
+						data={Goals}
+						renderItem={(itemData) => (
+							<GoalItem
+								text={itemData.item.text}
+								onGoalDelete={() => deleteGoal(itemData.item.id)}
+							/>
+						)}
+						keyExtractor={(itemdId) => itemdId.id}
+					/>
+				</View>
 			</View>
-		</View>
+		</>
 	);
 };
 
